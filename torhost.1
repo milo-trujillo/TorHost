@@ -1,0 +1,45 @@
+.Dd July 16, 2015
+.Dt TORHOST 1
+.Os
+.Sh NAME
+.Nm torhost
+.Nd An anonymous short term file-hosting utility.
+.Sh SYNOPSIS
+.Nm
+.Op Fl kd
+.Op Fl p Ar port
+.Ar file
+.Sh DESCRIPTION
+.Pp
+Torhost generates an ephemeral Tor Hidden Service, allowing a user to easily host a single file anonymously without involving third parties for storage.
+.Lp
+The following options are available:
+.Bl -tag -width indent
+.It Fl p -port
+Specify the port to host the hidden service on (default: 80).
+.It Fl k -keepalive
+Keep listening for additional network connections; do not exit after the file has been uploaded once.
+.It Fl d -debug
+Enable debugging information.
+.El
+.Sh EXAMPLES
+The following is an example usage of 
+.Nm
+.Pp
+.Dl $ torhost foo
+.Pp
+This should yield output similar to:
+.Pp
+.Dl Starting Tor...
+.Dl Hosting file at kjnfkjngfkdgnkfgnkdfgjn.onion (port 80)
+.Dl Press Control-C to abort file hosting.
+.Pp
+At this stage someone may connect to kjnfkjngfkdgnkfgnkdfgjn.onion with the Tor Browser Bundle to download the file. They could also use Tor as a SOCKS proxy and use a utility like netcat or curl to download.
+.Sh SEE ALSO
+.Xr tor 1 ,
+.Xr torsocks 1 ,
+.Xr nc 1 ,
+.Xr curl 1
+.Sh BUGS
+To file a bug report, please visit:
+.Dl https://github.com/milo-trujillo/TorHost
