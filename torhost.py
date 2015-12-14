@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import sys, signal, socket, time, os.path, stem.process
+import sys, signal, socket, time, os.path, stem.process, argparse
 from stem.control import Controller
 from stem.util import term
-from optparse import OptionParser
 from thread import *
 
 #
@@ -147,6 +146,14 @@ def verifyFile(filename):
 		"not readable!", 
 		term.Color.MAGENTA))
 
+# We needed to change the behavior of ArgumentParser to print full usage
+# information if the user doesn't specify a file to upload.
+class Parser(argparse.ArgumentParser):
+	def error(self, message):
+		sys.stderr.write('error: %s\n' % message)
+		self.print_help()
+		sys.exit(2)
+
 # Verifies command line arguments and flags, sets global variables accordingly
 def parseOptions():
 	# This should be the only function with write permission to global settings
@@ -154,25 +161,22 @@ def parseOptions():
 	global KeepAlive
 	global DebugMode
 	global FileName
-	usageStr = "Usage: %prog [options] file"
-	parser = OptionParser(usage=usageStr)
-	parser.add_option("-p", "--port", 
-	                  action="store", type="int", dest="port", default=80,
+	descr = "Easily and anonymously host files over Tor."
+	parser = Parser(description=descr)
+	parser.add_argument("-p", "--port", 
+	                  action="store", type=int, dest="port", default=80,
 	                  metavar="PORT",
-	                  help="Specify port to host hidden service on "
-	                       "(default: %default)")
-	parser.add_option("-k", "--keepalive", 
+	                  help="Specify port to host hidden service on ")
+	parser.add_argument("-k", "--keepalive", 
 	                  action="store_true", dest="keepalive", default=False,
 	                  help="Upload file to multiple users instead of one")
-	parser.add_option("-d", "--debug", 
+	parser.add_argument("-d", "--debug", 
 	                  action="store_true", dest="debug", default=False,
 	                  help="Enable debugging information")
-	(options, args) = parser.parse_args()
+	parser.add_argument('file', metavar='<file>', nargs=1,
+	                  help='file to upload')
+	options = parser.parse_args()
 	# At this point all our options are set in options.foo
-	# And any leftover arguments are in args
-	if( len(args) != 1 ):
-		parser.print_help()
-		sys.exit(1)
 	if( options.port < 1 ):
 		print("Impossible to bind to desired port!")
 		parser.print_help()
@@ -180,7 +184,7 @@ def parseOptions():
 	ServicePort = options.port
 	KeepAlive = options.keepalive
 	DebugMode = options.debug
-	FileName = args[0]
+	FileName = options.file[0]
 	debugMsg("=== TorHost Configuration ===")
 	debugMsg("Service port: " + str(ServicePort))
 	debugMsg("KeepAlive: " + str(KeepAlive))
