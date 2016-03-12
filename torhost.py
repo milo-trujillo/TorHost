@@ -18,6 +18,7 @@ from thread import *
 """
 DelayTorExit = 2 # Delay is in seconds
 DefaultServicePort = 80
+ChunkSize = 1000 # How many bytes to read from a file at a time
 
 #
 # These are global options, and are set by command line arguments
@@ -70,10 +71,13 @@ def uploadFile(filename, client):
 		print(term.format(("Uploading file '%s' to new client" % filename), 
 		      term.Color.YELLOW))
 		f = open(filename, "rb")
-		data = f.read() # This is probably not a good idea for huge files.
+		while( True ):
+			data = f.read(ChunkSize)
+			if( len(data) == 0 ):
+				debugMsg("Done reading file")
+				break # We've hit EOF
+			client.sendall(data)
 		f.close()
-		debugMsg("Done reading file, transmitting...")
-		client.sendall(data)
 		client.close()
 		print(term.format("File upload complete", term.Color.YELLOW))
 	except:
